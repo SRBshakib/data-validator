@@ -1,0 +1,92 @@
+# ============================================================================
+# Declarative Data Quality Rules Configuration (rules.yaml)
+# Used by: python validator.py <csv_path> rules.yaml
+# Dataset: Olist Brazilian E-Commerce Dataset
+# ============================================================================
+
+dataset_name: "Olist Brazilian E-Commerce Dataset"
+primary_key: "order_id"
+
+rules:
+  - id: "RULE-01"
+    sql_check_id: "DQ-01"
+    name: "No duplicate order_id"
+    type: "unique"
+    column: "order_id"
+    severity: "High"
+    description: "Every order_id must be unique across the orders dataset."
+
+  - id: "RULE-02"
+    sql_check_id: "DQ-02"
+    name: "No duplicate review_id"
+    type: "unique"
+    column: "review_id"
+    ignore_nulls: true
+    severity: "High"
+    description: "Each review_id should uniquely identify a single review record."
+
+  - id: "RULE-03"
+    sql_check_id: "DQ-05"
+    name: "Delivered orders must have a delivery_date"
+    type: "conditional_not_null"
+    column: "order_delivered_customer_date"
+    when_column: "order_status"
+    when_equals: "delivered"
+    severity: "High"
+    description: "Orders with order_status = 'delivered' cannot have NULL order_delivered_customer_date."
+
+  - id: "RULE-04"
+    sql_check_id: "DQ-09"
+    name: "Item price > 0"
+    type: "range"
+    column: "price"
+    min_exclusive: 0.0
+    severity: "High"
+    description: "Order item price must be strictly greater than R$ 0.00."
+
+  - id: "RULE-05"
+    sql_check_id: "DQ-10"
+    name: "Payment value > 0"
+    type: "range"
+    column: "payment_value"
+    min_exclusive: 0.0
+    severity: "Medium"
+    description: "Settled payment transaction amount must be greater than R$ 0.00."
+
+  - id: "RULE-06"
+    sql_check_id: "FMT-01"
+    name: "Customer email matches valid pattern"
+    type: "regex"
+    column: "customer_email"
+    pattern: "^[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}$"
+    severity: "Medium"
+    description: "Customer notification email must match standard RFC 5322 email syntax."
+
+  - id: "RULE-07"
+    sql_check_id: "DQ-11"
+    name: "delivery_date >= carrier_date"
+    type: "date_order"
+    earlier_column: "order_delivered_carrier_date"
+    later_column: "order_delivered_customer_date"
+    severity: "High"
+    description: "Customer delivery timestamp must be on or after carrier handoff timestamp."
+
+  - id: "RULE-08"
+    sql_check_id: "DQ-12"
+    name: "carrier_date >= order_date"
+    type: "date_order"
+    earlier_column: "order_purchase_timestamp"
+    later_column: "order_delivered_carrier_date"
+    severity: "High"
+    description: "Carrier handoff timestamp must be on or after order purchase timestamp."
+
+  - id: "RULE-09"
+    sql_check_id: "DQ-18"
+    name: "Payment total matches order total (tolerance R$ 0.05)"
+    type: "column_equals"
+    left_column: "order_total"
+    right_column: "payment_value"
+    tolerance: 0.05
+    severity: "Medium"
+    description: "Order total (price + freight_value) must equal payment_value within R$ 0.05."
+

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Quality Validation Report — Olist Brazilian E-Commerce Dataset</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #e2e8f0;
+      --pass-bg: #dcfce7;
+      --pass-fg: #15803d;
+      --fail-bg: #fee2e2;
+      --fail-fg: #b91c1c;
+      --high-bg: #fef2f2;
+      --high-fg: #dc2626;
+      --med-bg: #fffbeb;
+      --med-fg: #d97706;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 32px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    h1 { margin: 0 0 6px 0; font-size: 24px; }
+    h2 { margin: 28px 0 12px 0; font-size: 18px; }
+    .meta { color: var(--muted); font-size: 14px; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .kpi-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 13.5px;
+      margin-bottom: 28px;
+    }
+    th, td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    small { color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 11.5px;
+    }
+    .badge.pass { background: var(--pass-bg); color: var(--pass-fg); }
+    .badge.fail { background: var(--fail-bg); color: var(--fail-fg); }
+    .sev {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 11.5px;
+    }
+    .sev.high { background: var(--high-bg); color: var(--high-fg); }
+    .sev.medium { background: var(--med-bg); color: var(--med-fg); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Automated Data Quality Report — Olist Brazilian E-Commerce Dataset</h1>
+      <div class="meta">
+        Command: <code>python validator.py sample_data/olist_orders_sample.csv rules.yaml</code> &nbsp;|&nbsp;
+        Generated At: <code>2026-11-17 00:35:00</code> &nbsp;|&nbsp;
+        Cross-Checked Against: <strong>PostgreSQL Audit (100% Parity)</strong>
+      </div>
+    </header>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Rows (Sample / Full)</div>
+        <div class="kpi-value">16 / 99,441</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Rules Evaluated</div>
+        <div class="kpi-value">9</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Rules Passed</div>
+        <div class="kpi-value" style="color: var(--pass-fg);">2</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Rules Failed</div>
+        <div class="kpi-value" style="color: var(--fail-fg);">7</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Sample Failing Rows</div>
+        <div class="kpi-value" style="color: var(--fail-fg);">13</div>
+      </div>
+    </div>
+
+    <h2>1. Validation Summary by Rule (Sample Run + Full Olist Dataset Parity)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rule ID</th>
+          <th>SQL Check ID</th>
+          <th>Rule Name &amp; Description</th>
+          <th>Check Type</th>
+          <th>Severity</th>
+          <th class="num">Sample Flagged</th>
+          <th class="num">Full Olist CSV Flagged</th>
+          <th class="num">PostgreSQL Flagged</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>RULE-01</code></td>
+          <td><code>DQ-01</code></td>
+          <td><strong>No duplicate order_id</strong><br><small>Every order_id must be unique across the orders dataset.</small></td>
+          <td><code>unique</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+          <td><span class="badge pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-02</code></td>
+          <td><code>DQ-02</code></td>
+          <td><strong>No duplicate review_id</strong><br><small>Each review_id should uniquely identify a single review record.</small></td>
+          <td><code>unique</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">2</td>
+          <td class="num">814</td>
+          <td class="num">814</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-03</code></td>
+          <td><code>DQ-05</code></td>
+          <td><strong>Delivered orders must have a delivery_date</strong><br><small>Orders with order_status = 'delivered' cannot have NULL order_delivered_customer_date.</small></td>
+          <td><code>conditional_not_null</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">2</td>
+          <td class="num">8</td>
+          <td class="num">8</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-04</code></td>
+          <td><code>DQ-09</code></td>
+          <td><strong>Item price &gt; 0</strong><br><small>Order item price must be strictly greater than R$ 0.00.</small></td>
+          <td><code>range</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+          <td><span class="badge pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-05</code></td>
+          <td><code>DQ-10</code></td>
+          <td><strong>Payment value &gt; 0</strong><br><small>Settled payment transaction amount must be greater than R$ 0.00.</small></td>
+          <td><code>range</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">2</td>
+          <td class="num">9</td>
+          <td class="num">9</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-06</code></td>
+          <td><code>FMT-01</code></td>
+          <td><strong>Customer email matches valid pattern</strong><br><small>Customer notification email must match standard RFC 5322 email syntax.</small></td>
+          <td><code>regex</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">1</td>
+          <td class="num">1</td>
+          <td class="num">N/A (Python Regex)</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-07</code></td>
+          <td><code>DQ-11</code></td>
+          <td><strong>delivery_date &gt;= carrier_date</strong><br><small>Customer delivery timestamp must be on or after carrier handoff timestamp.</small></td>
+          <td><code>date_order</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">2</td>
+          <td class="num">23</td>
+          <td class="num">23</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-08</code></td>
+          <td><code>DQ-12</code></td>
+          <td><strong>carrier_date &gt;= order_date</strong><br><small>Carrier handoff timestamp must be on or after order purchase timestamp.</small></td>
+          <td><code>date_order</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">2</td>
+          <td class="num">166</td>
+          <td class="num">166</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+        <tr>
+          <td><code>RULE-09</code></td>
+          <td><code>DQ-18</code></td>
+          <td><strong>Payment total matches order total (tolerance R$ 0.05)</strong><br><small>Order total (price + freight_value) must equal payment_value within R$ 0.05.</small></td>
+          <td><code>column_equals</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">2</td>
+          <td class="num">310</td>
+          <td class="num">310</td>
+          <td><span class="badge fail">FAIL</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2. Detailed Failing Rows (13 Flagged Violations in Sample CSV)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rule ID</th>
+          <th>SQL Check</th>
+          <th>Severity</th>
+          <th class="num">CSV Row #</th>
+          <th>Entity ID (order_id)</th>
+          <th>Column(s)</th>
+          <th>Actual Value</th>
+          <th>Expected Rule</th>
+          <th>Failure Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>RULE-02</code></td>
+          <td><code>DQ-02</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">5</td>
+          <td><code>6c678c38f3a914c4b22f0c3222d29119</code></td>
+          <td><code>review_id</code></td>
+          <td><code>dbdf1ea31790c8ecfcc6750525661a9b (occurrence 2 of 3)</code></td>
+          <td><code>Unique review_id (1 occurrence)</code></td>
+          <td>Duplicate value 'dbdf1ea31790c8ecfcc6750525661a9b' in column 'review_id' (first seen at row 4)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-02</code></td>
+          <td><code>DQ-02</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">6</td>
+          <td><code>f728f03d3c8b225d049266d74f5b2286</code></td>
+          <td><code>review_id</code></td>
+          <td><code>dbdf1ea31790c8ecfcc6750525661a9b (occurrence 3 of 3)</code></td>
+          <td><code>Unique review_id (1 occurrence)</code></td>
+          <td>Duplicate value 'dbdf1ea31790c8ecfcc6750525661a9b' in column 'review_id' (first seen at row 4)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-03</code></td>
+          <td><code>DQ-05</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">7</td>
+          <td><code>2d1e2d5bf4dc7227b3bfebb81328c15f</code></td>
+          <td><code>order_delivered_customer_date</code></td>
+          <td><code>NULL</code></td>
+          <td><code>NOT NULL when order_status='delivered'</code></td>
+          <td>Missing required value in 'order_delivered_customer_date' when order_status='delivered'</td>
+        </tr>
+        <tr>
+          <td><code>RULE-03</code></td>
+          <td><code>DQ-05</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">8</td>
+          <td><code>f5dd62b788049ad9fc0526e3ad16bc01</code></td>
+          <td><code>order_delivered_customer_date</code></td>
+          <td><code>NULL</code></td>
+          <td><code>NOT NULL when order_status='delivered'</code></td>
+          <td>Missing required value in 'order_delivered_customer_date' when order_status='delivered'</td>
+        </tr>
+        <tr>
+          <td><code>RULE-05</code></td>
+          <td><code>DQ-10</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">9</td>
+          <td><code>00b1cb0320190ca0daa2c88b35206009</code></td>
+          <td><code>payment_value</code></td>
+          <td><code>0.00</code></td>
+          <td><code>payment_value &gt; 0.0</code></td>
+          <td>Value 0.00 in 'payment_value' violates range constraint (&gt; 0.0)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-05</code></td>
+          <td><code>DQ-10</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">10</td>
+          <td><code>8bcbe01d44d147f90f0d71e9fbd3eb2a</code></td>
+          <td><code>payment_value</code></td>
+          <td><code>0.00</code></td>
+          <td><code>payment_value &gt; 0.0</code></td>
+          <td>Value 0.00 in 'payment_value' violates range constraint (&gt; 0.0)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-06</code></td>
+          <td><code>FMT-01</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">10</td>
+          <td><code>8bcbe01d44d147f90f0d71e9fbd3eb2a</code></td>
+          <td><code>customer_email</code></td>
+          <td><code>invalid-email-address-no-at-symbol</code></td>
+          <td><code>Matches /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/</code></td>
+          <td>Value 'invalid-email-address-no-at-symbol' in 'customer_email' does not match required pattern</td>
+        </tr>
+        <tr>
+          <td><code>RULE-07</code></td>
+          <td><code>DQ-11</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">11</td>
+          <td><code>2fb597c2f7720ab52ef16ca73d38c890</code></td>
+          <td><code>order_delivered_customer_date vs order_delivered_carrier_date</code></td>
+          <td><code>2017-07-05 15:43:29 &lt; 2017-07-10 19:50:48 (-124.12h)</code></td>
+          <td><code>order_delivered_customer_date &gt;= order_delivered_carrier_date</code></td>
+          <td>Chronological inversion: order_delivered_customer_date (2017-07-05 15:43:29) precedes order_delivered_carrier_date (2017-07-10 19:50:48)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-07</code></td>
+          <td><code>DQ-11</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">12</td>
+          <td><code>7645888999246f86b249a2c44abbc715</code></td>
+          <td><code>order_delivered_customer_date vs order_delivered_carrier_date</code></td>
+          <td><code>2017-07-20 19:22:00 &lt; 2017-07-26 19:22:05 (-144.00h)</code></td>
+          <td><code>order_delivered_customer_date &gt;= order_delivered_carrier_date</code></td>
+          <td>Chronological inversion: order_delivered_customer_date (2017-07-20 19:22:00) precedes order_delivered_carrier_date (2017-07-26 19:22:05)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-08</code></td>
+          <td><code>DQ-12</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">13</td>
+          <td><code>7c48bb55e8e4f7e56d412e9653db37bc</code></td>
+          <td><code>order_delivered_carrier_date vs order_purchase_timestamp</code></td>
+          <td><code>2018-07-16 14:36:00 &lt; 2018-07-16 18:40:53 (-4.08h)</code></td>
+          <td><code>order_delivered_carrier_date &gt;= order_purchase_timestamp</code></td>
+          <td>Chronological inversion: order_delivered_carrier_date (2018-07-16 14:36:00) precedes order_purchase_timestamp (2018-07-16 18:40:53)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-08</code></td>
+          <td><code>DQ-12</code></td>
+          <td><span class="sev high">High</span></td>
+          <td class="num">14</td>
+          <td><code>ea1c8809721b5671217121b9d7b10293</code></td>
+          <td><code>order_delivered_carrier_date vs order_purchase_timestamp</code></td>
+          <td><code>2018-05-03 14:52:00 &lt; 2018-05-03 19:24:13 (-4.54h)</code></td>
+          <td><code>order_delivered_carrier_date &gt;= order_purchase_timestamp</code></td>
+          <td>Chronological inversion: order_delivered_carrier_date (2018-05-03 14:52:00) precedes order_purchase_timestamp (2018-05-03 19:24:13)</td>
+        </tr>
+        <tr>
+          <td><code>RULE-09</code></td>
+          <td><code>DQ-18</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">15</td>
+          <td><code>ce6d150fb29ada17d2f83422e0014370</code></td>
+          <td><code>order_total != payment_value</code></td>
+          <td><code>order_total=1399.03, payment_value=1581.84 (diff=+182.81)</code></td>
+          <td><code>|order_total - payment_value| &lt;= 0.05</code></td>
+          <td>Cross-column mismatch: order_total (1399.03) != payment_value (1581.84), diff=+182.81</td>
+        </tr>
+        <tr>
+          <td><code>RULE-09</code></td>
+          <td><code>DQ-18</code></td>
+          <td><span class="sev medium">Medium</span></td>
+          <td class="num">16</td>
+          <td><code>70b742795bc441e94a44a084b6d9ce7a</code></td>
+          <td><code>order_total != payment_value</code></td>
+          <td><code>order_total=151.62, payment_value=100.00 (diff=-51.62)</code></td>
+          <td><code>|order_total - payment_value| &lt;= 0.05</code></td>
+          <td>Cross-column mismatch: order_total (151.62) != payment_value (100.00), diff=-51.62</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
+
